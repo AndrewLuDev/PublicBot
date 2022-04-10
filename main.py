@@ -31,12 +31,15 @@ async def on_ready():
       if len(msgArgs) >= 2:
 
         #deleting messages
-        if msg.startswith("!del "):
-          msgArgs[1] = int(msgArgs[1])
-          if msgArgs[1] >= 1 and msgArgs[1] <= 10:
-            await message.channel.purge(limit=msgArgs[1]+1)
-          else:
-            await message.channel.send('Please enter a number from 1 to 10')
-  
+        await deleteMsg(message, msg, msgID, msgArgs)
+        
+
+async def deleteMsg(message, msg, msgID, msgArgs):
+  if msg.startswith("!del "):
+    msgArgs[1] = int(msgArgs[1])
+    if msgArgs[1] >= 1 and msgArgs[1] <= 10:
+      await message.channel.purge(limit=msgArgs[1]+1)
+    else:
+      await message.channel.send('Please enter a number from 1 to 10')
 
 client.run(os.getenv('TOKEN'))
