@@ -69,13 +69,17 @@ async def deleteMsg(message, msg, msgID, numMsgs):
 
 async def addEmote(message, msg, msgID, msgArgs):
   #format of new emote: <:emoteName:emoteID>
+  emoteLength = 18
   newEmote = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1).split(':')
   print(newEmote)
   if newEmote[0] not in emotesList:
-    emotesIds[newEmote[0]] = newEmote[1]
-    emotesList.append(newEmote[0])
-    await message.channel.send('Emote has been added')
-    print(emotesList)
+    if len(newEmote[1]) == emoteLength:
+      emotesIds[newEmote[0]] = newEmote[1]
+      emotesList.append(newEmote[0])
+      await message.channel.send('Emote has been added')
+      print(emotesList)
+    else:
+      await message.channel.send('Invalid emote ID')
   else:
     await message.channel.send('Emote has already been added')
 
