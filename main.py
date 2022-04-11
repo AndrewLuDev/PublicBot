@@ -1,5 +1,6 @@
 import discord
 import os
+from keep_alive import keep_alive
 #from replit import db
 
 friendsIds = {}
@@ -7,7 +8,6 @@ friendsList = []
 
 emotesIds = {}
 emotesList = []
-
 
 for userInfo in os.getenv('friendsList').split(", "):
   #friendsIds format:
@@ -35,19 +35,21 @@ async def on_ready():
     if msgID in friendsIds.values():
       if msgID in admins:
         if msg.startswith("!add "):
-          addEmote(message, msg, msgID, msgArgs)
-
-        
-      if msg == "!emotes":
-        await message.channel.send(emotesIds)
-        
-
-        if msg.startswith("!e ") and len(msgArgs)==2:
+          await addEmote(message, msg, msgID, msgArgs)
+        elif msg.startswith("!remove "):
+          await removeEmote(message, msg, msgID, msgArgs)
+        elif msg.startswith("!e ") and len(msgArgs)==2:
           if msgArgs[1] in emotesIds.keys():
             tempString = '<:' + msgArgs[1] + ':' + emotesIds[msgArgs[1]] + '>'
             await message.channel.send(tempString)
           elif msgArgs[1] not in emotesList:
             await message.channel.send('Emote is not in the emotes list')
+        
+      if msg == "!emotes":
+        await message.channel.send(emotesIds)
+        
+
+        
           
       if len(msgArgs) >= 2:
         
@@ -77,6 +79,10 @@ async def addEmote(message, msg, msgID, msgArgs):
   else:
     await message.channel.send('Emote has already been added')
 
+async def removeEmote(message, msg, msgID, msgArgs):
+  emotesIds.pop(msgArgs[1], None)
+  emotesList.remove(msgArgs[1])
+  await message.channel.send(msgArgs[1] + " has been removed")
 
-
+keep_alive()
 client.run(os.getenv('TOKEN'))
