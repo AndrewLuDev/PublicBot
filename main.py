@@ -1,8 +1,13 @@
 import discord
 import os
+#from replit import db
 
 friendsIds = {}
 friendsList = []
+
+emotesIds = {}
+emotesList = []
+
 
 for userInfo in os.getenv('friendsList').split(", "):
   #friendsIds format:
@@ -10,8 +15,9 @@ for userInfo in os.getenv('friendsList').split(", "):
   userInfo = userInfo.split(': ')
   friendsList.append(userInfo[0])
   friendsIds[userInfo[0]] = int(userInfo[1])
-
-print(friendsIds)
+  
+#admins are the first two people in the list
+admins = [friendsIds[friendsList[0]], friendsIds[friendsList[1]]]
 
 client = discord.Client()
 
@@ -27,19 +33,50 @@ async def on_ready():
     msgArgs = msg.split()
 
     if msgID in friendsIds.values():
-      print(msgID)
-      if len(msgArgs) >= 2:
+      if msgID in admins:
+        if msg.startswith("!add "):
+          addEmote(message, msg, msgID, msgArgs)
 
-        #deleting messages
-        await deleteMsg(message, msg, msgID, msgArgs)
+        
+      if msg == "!emotes":
+        await message.channel.send(emotesIds)
         
 
-async def deleteMsg(message, msg, msgID, msgArgs):
+        if msg.startswith("!e ") and len(msgArgs)==2:
+          if msgArgs[1] in emotesIds.keys():
+            tempString = '<:' + msgArgs[1] + ':' + emotesIds[msgArgs[1]] + '>'
+            await message.channel.send(tempString)
+          elif msgArgs[1] not in emotesList:
+            await message.channel.send('Emote is not in the emotes list')
+          
+      if len(msgArgs) >= 2:
+        
+        #deleting messages
+          await deleteMsg(message, msg, msgID, msgArgs[1])
+
+
+async def deleteMsg(message, msg, msgID, numMsgs):
+  minNumMsgs = 1
+  maxNumMsgs = 15
   if msg.startswith("!del "):
-    msgArgs[1] = int(msgArgs[1])
-    if msgArgs[1] >= 1 and msgArgs[1] <= 10:
-      await message.channel.purge(limit=msgArgs[1]+1)
+    numMsgs = int(numMsgs)
+    if numMsgs >= minNumMsgs and numMsgs <= maxNumMsgs:
+      await message.channel.purge(limit=numMsgs+1)
     else:
-      await message.channel.send('Please enter a number from 1 to 10')
+      await message.channel.send('Please enter a number from ' + str(minNumMsgs) + ' to ' + str(maxNumMsgs))
+
+async def addEmote(message, msg, msgID, msgArgs):
+  #format of new emote: <:emoteName:emoteID>
+  newEmote = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1).split(':')
+  print(newEmote)
+  if newEmote[0] not in emotesList:
+    emotesIds[newEmote[0]] = newEmote[1]
+    emotesList.append(newEmote[0])
+    await message.channel.send('Emote has been added')
+    print(emotesList)
+  else:
+    await message.channel.send('Emote has already been added')
+
+
 
 client.run(os.getenv('TOKEN'))
