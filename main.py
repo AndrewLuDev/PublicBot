@@ -1,7 +1,6 @@
 import discord
 import os
 from keep_alive import keep_alive
-import replit
 from replit import db
 
 friendsIds = {}
@@ -33,15 +32,18 @@ async def on_ready():
         
       elif msg.startswith("!remove "):
         await removeEmote(message, msg, msgID, msgArgs)
-        
+
+      elif msg.lower() == "!clear emotes":
+        await clearAllEmotes(message)        
+      
       elif msg.startswith("!e ") and len(msgArgs)==2:
-        msgArgs[1].replace(':', '')
-        if msgArgs[1] in db.keys():
-          tempString = '<:' + msgArgs[1] + ':' + db[msgArgs[1]] + '>'
-          await message.channel.send(tempString)
-        elif msgArgs[1] not in db.keys():
-          await message.channel.send('Emote is not in the emotes list')
-        
+        msgArgs = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1)
+        if ':' in msgArgs:
+          msgArgs = msgArgs.split(':')
+          await sendEmote(message, msg, msgID, msgArgs[0])
+        else:
+          await sendEmote(message, msg, msgID, msgArgs)
+      
       if msg == "!emotes":
         await message.channel.send(db.keys())
         
@@ -64,7 +66,9 @@ async def deleteMsg(message, msg, msgID, numMsgs):
 async def addEmote(message, msg, msgID, msgArgs):
   #format of new emote: <:emoteName:emoteID>
   emoteLength = 18
-  newEmote = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1).split(':')
+  newEmote = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1)
+  if ':' in newEmote:
+    newEmote = newEmote.split(':')
   if newEmote[0] not in db.keys():
     if len(newEmote[1]) == emoteLength:
       db[newEmote[0]] = newEmote[1]
@@ -77,11 +81,23 @@ async def addEmote(message, msg, msgID, msgArgs):
 
 
 async def removeEmote(message, msg, msgID, msgArgs):
-  if msgArgs[1] in db.keys():
+  if msgArgs[1].lower in db.keys():
     del db[msgArgs[1]]
     await message.channel.send(msgArgs[1] + " has been removed")
   else:
     await message.channel.send(msgArgs[1] + " is not in the emotes list")
+
+async def clearAllEmotes(message):
+  for key in db.keys():
+    del db[key]
+  await message.channel.send('All emotes have been removed')
+
+async def sendEmote(message, msg, msgID, msgArgs):
+  if msgArgs.lower() in db.keys():
+    tempString = '<:' + msgArgs + ':' + db[msgArgs] + '>'
+    await message.channel.send(tempString)
+  elif msgArgs[0].lower() not in db.keys():
+    await message.channel.send('Emote is not in the emotes list')
 
 keep_alive()
 client.run(os.getenv('TOKEN'))
