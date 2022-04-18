@@ -1,7 +1,9 @@
 import discord
+import asyncio
 import os
 from keep_alive import keep_alive
 from replit import db
+
 
 friendsIds = {}
 friendsList = []
@@ -46,37 +48,60 @@ async def on_ready():
       
       if msg == "!emotes":
         await message.channel.send(db.keys())
+        #allValues = []
+        #for val in db.values():
+        #  allValues.append(val)
+        #await message.channel.send(allValues)  
         
 
       if len(msgArgs) >= 2:
         #deleting messages
-        await deleteMsg(message, msg, msgID, msgArgs[1])
+        if msg.startswith("!del "):
+          await deleteMsg(message, msg, msgID, msgArgs)
 
 
-async def deleteMsg(message, msg, msgID, numMsgs):
+async def deleteMsg(message, msg, msgID, msgArgs):
   minNumMsgs = 1
   maxNumMsgs = 15
-  if msg.startswith("!del "):
-    numMsgs = int(numMsgs)
-    if numMsgs >= minNumMsgs and numMsgs <= maxNumMsgs:
+
+  numMsgs = int(msgArgs[1])
+  deleteThese = []
+  counter = 0
+
+  if numMsgs >= minNumMsgs and numMsgs <= maxNumMsgs:
+    if len(msgArgs) == 3 and msgArgs[2] == "me":
+      async for xMessage in message.channel.history(limit=50):
+        if xMessage.author.id == msgID:
+          if counter <= numMsgs:
+            counter += 1
+            deleteThese.append(xMessage.id)
+          else:
+            break
+      for eachMsg in deleteThese:
+        temp = await message.channel.fetch_message(eachMsg)
+        await temp.delete()
+    elif len(msgArgs) >= 2:
       await message.channel.purge(limit=numMsgs+1)
-    else:
-      await message.channel.send('Please enter a number from ' + str(minNumMsgs) + ' to ' + str(maxNumMsgs))
+  else:
+    await message.channel.send('Please enter a number from ' + str(minNumMsgs) + ' to ' + str(maxNumMsgs))
+
+  await asyncio.sleep(2)
+
+
 
 async def addEmote(message, msg, msgID, msgArgs):
   #format of new emote: <:emoteName:emoteID>
   emoteLength = 18
-  newEmote = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1)
-  if ':' in newEmote:
-    newEmote = newEmote.split(':')
-  if newEmote[0] not in db.keys():
-    if len(newEmote[1]) == emoteLength:
+  newEmote = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1).split(':')
+  if len(newEmote[1]) == emoteLength:
+    if newEmote[0] not in db.keys():
       db[newEmote[0]] = newEmote[1]
       await message.channel.send('Emote has been added')
-    else:
-      await message.channel.send('Invalid emote ID')
+    else:    
+      await message.channel.send('Emote has already been added')
   else:
-    await message.channel.send('Emote has already been added')
+      await message.channel.send('Invalid emote ID')
+    
 
 
 
@@ -92,11 +117,11 @@ async def clearAllEmotes(message):
     del db[key]
   await message.channel.send('All emotes have been removed')
 
-async def sendEmote(message, msg, msgID, msgArgs):
-  if msgArgs.lower() in db.keys():
-    tempString = '<:' + msgArgs + ':' + db[msgArgs] + '>'
+async def sendEmote(message, msg, msgID, emoteName):
+  if emoteName.lower() in db.keys():
+    tempString = '<:' + emoteName + ':' + db[emoteName] + '>'
     await message.channel.send(tempString)
-  elif msgArgs[0].lower() not in db.keys():
+  elif emoteName[0].lower() not in db.keys():
     await message.channel.send('Emote is not in the emotes list')
 
 keep_alive()
