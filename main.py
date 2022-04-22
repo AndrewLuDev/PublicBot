@@ -48,45 +48,17 @@ async def on_ready():
       
       if msg == "!emotes":
         await message.channel.send(db.keys())
-        #allValues = []
-        #for val in db.values():
-        #  allValues.append(val)
-        #await message.channel.send(allValues)  
         
-
       if len(msgArgs) >= 2:
         #deleting messages
         if msg.startswith("!del "):
-          await deleteMsg(message, msg, msgID, msgArgs)
+          try:
+            await deleteMsg(message, msg, msgID, msgArgs)
+          except:
+            pass
 
 
-async def deleteMsg(message, msg, msgID, msgArgs):
-  minNumMsgs = 1
-  maxNumMsgs = 15
-
-  numMsgs = int(msgArgs[1])
-  deleteThese = []
-  counter = 0
-
-  if numMsgs >= minNumMsgs and numMsgs <= maxNumMsgs:
-    if len(msgArgs) == 3 and msgArgs[2] == "me":
-      async for xMessage in message.channel.history(limit=50):
-        if xMessage.author.id == msgID:
-          if counter <= numMsgs:
-            counter += 1
-            deleteThese.append(xMessage.id)
-          else:
-            break
-      for eachMsg in deleteThese:
-        temp = await message.channel.fetch_message(eachMsg)
-        await temp.delete()
-    elif len(msgArgs) >= 2:
-      await message.channel.purge(limit=numMsgs+1)
-  else:
-    await message.channel.send('Please enter a number from ' + str(minNumMsgs) + ' to ' + str(maxNumMsgs))
-
-  await asyncio.sleep(2)
-
+    await asyncio.sleep(2)    
 
 
 async def addEmote(message, msg, msgID, msgArgs):
@@ -101,9 +73,6 @@ async def addEmote(message, msg, msgID, msgArgs):
       await message.channel.send('Emote has already been added')
   else:
       await message.channel.send('Invalid emote ID')
-    
-
-
 
 async def removeEmote(message, msg, msgID, msgArgs):
   if msgArgs[1].lower in db.keys():
@@ -120,9 +89,37 @@ async def clearAllEmotes(message):
 async def sendEmote(message, msg, msgID, emoteName):
   if emoteName.lower() in db.keys():
     tempString = '<:' + emoteName + ':' + db[emoteName] + '>'
+
+    temp = await message.channel.fetch_message(message.id)
+    await asyncio.sleep(1)
+    await temp.delete()
     await message.channel.send(tempString)
   elif emoteName[0].lower() not in db.keys():
     await message.channel.send('Emote is not in the emotes list')
+
+
+async def deleteMsg(message, msg, msgID, msgArgs):
+  numMsgs = int(msgArgs[1])
+  minNumMsgs = 1
+  maxNumMsgs = 15
+  counter = 0
+  
+  if numMsgs >= minNumMsgs and numMsgs <= maxNumMsgs:
+    if len(msgArgs) == 3 and msgArgs[2] == "me":
+      async for xMessage in message.channel.history(limit=50):
+        if xMessage.author.id == msgID:
+          if counter <= numMsgs:
+            counter +=1
+            temp = await message.channel.fetch_message(xMessage.id)
+            await asyncio.sleep(1)
+            await temp.delete()
+          else:
+            break
+    else:
+      await message.channel.purge(limit=numMsgs+1)
+  else:
+    await message.channel.send('Please enter a number from ' + str(minNumMsgs) + ' to ' + str(maxNumMsgs))
+
 
 keep_alive()
 client.run(os.getenv('TOKEN'))
