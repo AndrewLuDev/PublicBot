@@ -4,6 +4,7 @@ import os
 from keep_alive import keep_alive
 from replit import db
 
+import time
 
 friendsIds = {}
 friendsList = []
@@ -27,36 +28,45 @@ async def on_ready():
     msg = message.content
     msgID = message.author.id
     msgArgs = msg.split()
-
-    if msgID in friendsIds.values():
-      if msg.startswith("!add "):
-        await addEmote(message, msg, msgID, msgArgs)
-        
-      elif msg.startswith("!remove "):
-        await removeEmote(message, msg, msgID, msgArgs)
-
-      elif msg.lower() == "!clear emotes":
-        await clearAllEmotes(message)        
+    try:
       
+      #################################################################
+      #logs messages into the console (as a temporary audit log)
+      t = time.localtime()
+      current_time = time.strftime("%H:%M:%S", t)
+      print(current_time, message.author.name, ': ', message.content)
+      #################################################################
+  
+      #admin-specific commands
+      if msgID in friendsIds.values():
+        if msg.startswith("!add "):
+          await addEmote(message, msg, msgID, msgArgs)
+          
+        elif msg.startswith("!remove "):
+          await removeEmote(message, msg, msgID, msgArgs)
+  
+        elif msg.lower() == "!clear emotes":
+          await clearAllEmotes(message)        
+  
+        elif len(msgArgs) >= 2:
+          if msg.startswith("!del "):
+            await deleteMsg(message, msg, msgID, msgArgs)
+  
+      #commands all members can use
+      if msg.startswith("!pfp"):
+        await getAvatar(message, msgArgs)
+      elif msg == "!emotes":
+        await listAllEmotes(message)
       elif msg.startswith("!e ") and len(msgArgs)==2:
+        #format of emote: <:emoteName:emoteID>
         msgArgs = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1)
         if ':' in msgArgs:
           msgArgs = msgArgs.split(':')
           await sendEmote(message, msg, msgID, msgArgs[0])
         else:
           await sendEmote(message, msg, msgID, msgArgs)
-      
-      if msg == "!emotes":
-        await message.channel.send(db.keys())
-        
-      if len(msgArgs) >= 2:
-        #deleting messages
-        if msg.startswith("!del "):
-          try:
-            await deleteMsg(message, msg, msgID, msgArgs)
-          except:
-            pass
-
+    except:
+     pass
 
     await asyncio.sleep(2)    
 
@@ -75,7 +85,7 @@ async def addEmote(message, msg, msgID, msgArgs):
       await message.channel.send('Invalid emote ID')
 
 async def removeEmote(message, msg, msgID, msgArgs):
-  if msgArgs[1].lower in db.keys():
+  if msgArgs[1].lower() in db.keys():
     del db[msgArgs[1]]
     await message.channel.send(msgArgs[1] + " has been removed")
   else:
@@ -96,6 +106,25 @@ async def sendEmote(message, msg, msgID, emoteName):
     await message.channel.send(tempString)
   elif emoteName[0].lower() not in db.keys():
     await message.channel.send('Emote is not in the emotes list')
+
+async def listAllEmotes(message):
+  emotesList = list(db.keys())
+  emotesList.sort()
+  
+  tempList = []
+  for emoteName in emotesList:
+    emote = "<:" + emoteName + ":" + db[emoteName] + ">"
+    tempList.append(emoteName + ": " + emote)
+  tempList = ", ".join(tempList)
+  await message.channel.send(tempList)
+
+
+async def getAvatar(message, msgArgs):
+  if len(msgArgs) == 1:
+    avatar = message.author.avatar_url
+  elif len(message.mentions) > 0:
+    avatar = message.mentions[0].avatar_url
+  await message.channel.send(avatar) 
 
 
 async def deleteMsg(message, msg, msgID, msgArgs):
@@ -121,5 +150,11 @@ async def deleteMsg(message, msg, msgID, msgArgs):
     await message.channel.send('Please enter a number from ' + str(minNumMsgs) + ' to ' + str(maxNumMsgs))
 
 
-keep_alive()
-client.run(os.getenv('TOKEN'))
+try:
+  keep_alive()
+  client.run(os.getenv('TOKEN'))
+except discord.errors.HTTPException:
+  print("\nBLOCKED BY RATE LIMITS\nRESTARTING NOW\n")
+  os.system("python restarter.py")
+  os.system("kill 1")
+  #system("busybox reboot")
