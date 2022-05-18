@@ -5,6 +5,12 @@ from keep_alive import keep_alive
 from replit import db
 
 import time
+from datetime import datetime
+from pytz import timezone
+
+import requests
+import json
+import random
 
 friendsIds = {}
 friendsList = []
@@ -32,9 +38,14 @@ async def on_ready():
       
       #################################################################
       #logs messages into the console (as a temporary audit log)
-      t = time.localtime()
-      current_time = time.strftime("%H:%M:%S", t)
-      print(current_time, message.author.name, ': ', message.content)
+      # t = time.localtime()
+      # current_time = time.strftime("%H:%M:%S", t)
+      # print(current_time, message.author.name + '#' + message.author.discriminator, ': ', message.content)
+      tz = timezone("US/Eastern")
+      date = datetime.now(tz)
+
+      current_time = date.strftime("%h %d %Y %I:%M%p")
+      print(current_time, message.author.name + '#' + message.author.discriminator, ': ', message.content)
       #################################################################
   
       #admin-specific commands
@@ -65,10 +76,13 @@ async def on_ready():
           await sendEmote(message, msg, msgID, msgArgs[0])
         else:
           await sendEmote(message, msg, msgID, msgArgs)
+      elif msg.startswith("!gif"):
+        await sendGif(message)
     except:
      pass
 
     await asyncio.sleep(2)    
+
 
 
 async def addEmote(message, msg, msgID, msgArgs):
@@ -126,6 +140,22 @@ async def getAvatar(message, msgArgs):
     avatar = message.mentions[0].avatar_url
   await message.channel.send(avatar) 
 
+async def sendGif(message):
+  apikey = os.getenv('apikey')
+  maxNumGifs = 50
+  msgArgs = message.content.split(" ", 1)
+  search_term = msgArgs[1]
+  
+  r = requests.get(
+    "https://g.tenor.com/v1/search?q=%s&key=%s&limit=%s" % (search_term, apikey, maxNumGifs))
+  
+  if r.status_code == 200:
+    thisgif = str(json.loads(r.content)['results'][random.randint(0, maxNumGifs)]['media'][0]['gif']['url'])
+    #print(thisgif)
+    await message.channel.send(thisgif)
+  
+  await deleteCommand(message, message.id)
+  
 
 async def deleteMsg(message, msg, msgID, msgArgs):
   numMsgs = int(msgArgs[1])
@@ -139,15 +169,19 @@ async def deleteMsg(message, msg, msgID, msgArgs):
         if xMessage.author.id == msgID:
           if counter <= numMsgs:
             counter +=1
-            temp = await message.channel.fetch_message(xMessage.id)
-            await asyncio.sleep(1)
-            await temp.delete()
+            await deleteCommand(message, xMessage.id)
           else:
             break
     else:
       await message.channel.purge(limit=numMsgs+1)
   else:
     await message.channel.send('Please enter a number from ' + str(minNumMsgs) + ' to ' + str(maxNumMsgs))
+
+async def deleteCommand(message, messageID):
+  temp = await message.channel.fetch_message(messageID)
+  await asyncio.sleep(0.5)
+  await temp.delete()
+
 
 
 try:
