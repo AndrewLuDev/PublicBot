@@ -152,6 +152,7 @@ async def sendGif(message):
   if r.status_code == 200:
     thisgif = str(json.loads(r.content)['results'][random.randint(0, maxNumGifs)]['media'][0]['gif']['url'])
     #print(thisgif)
+    await message.channel.send("> " + message.author.name + '#' + message.author.discriminator + ': ' + search_term)
     await message.channel.send(thisgif)
   
   await deleteCommand(message, message.id)
