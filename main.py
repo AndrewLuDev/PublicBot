@@ -154,7 +154,8 @@ async def sendGif(message):
     #print(thisgif)
     await message.channel.send("> " + message.author.name + '#' + message.author.discriminator + ': ' + search_term)
     await message.channel.send(thisgif)
-  
+  else:
+    await message.channel.send("No results found for the search term: " + search_term)
   await deleteCommand(message, message.id)
   
 
@@ -190,6 +191,7 @@ try:
   client.run(os.getenv('TOKEN'))
 except discord.errors.HTTPException:
   print("\nBLOCKED BY RATE LIMITS\nRESTARTING NOW\n")
-  os.system("python restarter.py")
+  
   os.system("kill 1")
+  os.system("python restarter.py")  
   #system("busybox reboot")
