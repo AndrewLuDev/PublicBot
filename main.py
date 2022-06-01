@@ -4,7 +4,6 @@ import os
 from keep_alive import keep_alive
 from replit import db
 
-import time
 from datetime import datetime
 from pytz import timezone
 
@@ -49,6 +48,8 @@ async def on_ready():
       #################################################################
   
       #admin-specific commands
+      deleteCheck = False
+      
       if msgID in friendsIds.values():
         if msg.startswith("!add "):
           await addEmote(message, msg, msgID, msgArgs)
@@ -60,9 +61,28 @@ async def on_ready():
           await clearAllEmotes(message)        
   
         elif len(msgArgs) >= 2:
-          if msg.startswith("!del "):
+          if msg.startswith("!del") and len(msgArgs) == 3:
+            deleteCheck = True
+            maxLogMsgs = 200
+            counter = 0
+            numMsgs = int(msgArgs[1])
+            taggedUser = msgArgs[2]
+            if ('<@' in taggedUser) and ('>' in taggedUser):
+              taggedUser = taggedUser.replace('<', '').replace('>', '').replace('@', '')
+              async for xMessage in message.channel.history(limit=maxLogMsgs):
+                if xMessage.author.id == int(taggedUser):
+                  if counter < numMsgs:
+                    counter +=1
+                    await deleteCommand(message, xMessage.id)
+                  else:
+                    break
+          elif msg.startswith("!del "):
+            deleteCheck = True
             await deleteMsg(message, msg, msgID, msgArgs)
-  
+
+      
+
+            
       #commands all members can use
       if msg.startswith("!pfp"):
         await getAvatar(message, msgArgs)
@@ -78,10 +98,12 @@ async def on_ready():
           await sendEmote(message, msg, msgID, msgArgs)
       elif msg.startswith("!gif"):
         await sendGif(message)
+      elif msg.startswith("!del") and ("me" in msg) and (deleteCheck == False):
+        await deleteMsg(message, msg, msgID, msgArgs)
     except:
      pass
 
-    await asyncio.sleep(2)    
+    #await asyncio.sleep(2)    
 
 
 
@@ -115,7 +137,7 @@ async def sendEmote(message, msg, msgID, emoteName):
     tempString = '<:' + emoteName + ':' + db[emoteName] + '>'
 
     temp = await message.channel.fetch_message(message.id)
-    await asyncio.sleep(1)
+    #await asyncio.sleep(1)
     await temp.delete()
     await message.channel.send(tempString)
   elif emoteName[0].lower() not in db.keys():
@@ -163,11 +185,12 @@ async def deleteMsg(message, msg, msgID, msgArgs):
   numMsgs = int(msgArgs[1])
   minNumMsgs = 1
   maxNumMsgs = 15
+  maxLogMsgs = 50
   counter = 0
   
   if numMsgs >= minNumMsgs and numMsgs <= maxNumMsgs:
     if len(msgArgs) == 3 and msgArgs[2] == "me":
-      async for xMessage in message.channel.history(limit=50):
+      async for xMessage in message.channel.history(limit=maxLogMsgs):
         if xMessage.author.id == msgID:
           if counter <= numMsgs:
             counter +=1
@@ -181,7 +204,7 @@ async def deleteMsg(message, msg, msgID, msgArgs):
 
 async def deleteCommand(message, messageID):
   temp = await message.channel.fetch_message(messageID)
-  await asyncio.sleep(0.5)
+  #await asyncio.sleep(0.5)
   await temp.delete()
 
 
