@@ -1,5 +1,6 @@
 import discord
 import asyncio
+import re
 import os
 from keep_alive import keep_alive
 from replit import db
@@ -33,90 +34,75 @@ async def on_ready():
     msg = message.content
     msgID = message.author.id
     msgArgs = msg.split()
-    try:
       
-      #################################################################
-      #logs messages into the console (as a temporary audit log)
-      # t = time.localtime()
-      # current_time = time.strftime("%H:%M:%S", t)
-      # print(current_time, message.author.name + '#' + message.author.discriminator, ': ', message.content)
-      tz = timezone("US/Eastern")
-      date = datetime.now(tz)
+    #################################################################
+    #logs messages into the console (as a temporary audit log)
+    # t = time.localtime()
+    # current_time = time.strftime("%H:%M:%S", t)
+    # print(current_time, message.author.name + '#' + message.author.discriminator, ': ', message.content)
+    tz = timezone("US/Eastern")
+    date = datetime.now(tz)
 
-      current_time = date.strftime("%h %d %Y %I:%M%p")
-      print(current_time, message.author.name + '#' + message.author.discriminator, ': ', message.content)
-      #################################################################
-  
-      #admin-specific commands
-      deleteCheck = False
-      
-      if msgID in friendsIds.values():
-        if msg.startswith("!add "):
-          await addEmote(message, msg, msgID, msgArgs)
+    current_time = date.strftime("%h %d %Y %I:%M%p")
+    print(current_time, message.author.name + '#' + message.author.discriminator, ': ', message.content)
+    #################################################################
+
+    #admin-specific commands
+    deleteCheck = False
+    
+    if msgID in friendsIds.values():
+      if msg.startswith("!add "):
+        await addEmote(message, msg, msgID, msgArgs)
+        
+      elif msg.startswith("!remove "):
+        await removeEmote(message, msg, msgID, msgArgs)
+
+      elif msg.lower() == "!clear emotes":
+        await clearAllEmotes(message)        
+
+      elif len(msgArgs) >= 2:
+        if msg.startswith("!del "):
+          deleteCheck = True
+          await deleteMsg(message, msg, msgID, msgArgs)
+
+    
+
           
-        elif msg.startswith("!remove "):
-          await removeEmote(message, msg, msgID, msgArgs)
+    #commands all members can use
+    if msg.startswith("!pfp"):
+      await getAvatar(message, msgArgs)
+    elif msg == "!emotes":
+      await listAllEmotes(message)
+    elif msg.startswith("!e ") and len(msgArgs)==2:
+      #format of emote: <:emoteName:emoteID>
+      msgArgs = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1)
+      if ':' in msgArgs:
+        msgArgs = msgArgs.split(':')
+        await sendEmote(message, msg, msgID, msgArgs[0])
+      else:
+        await sendEmote(message, msg, msgID, msgArgs)
+    elif msg.startswith("!gif"):
+      await sendGif(message)
+    elif msg.startswith("!del") and ("me" in msg) and (deleteCheck == False):
+      await deleteMsg(message, msg, msgID, msgArgs)
+
+    elif msg.startswith("!poll"):
+      await createPoll(message)
   
-        elif msg.lower() == "!clear emotes":
-          await clearAllEmotes(message)        
   
-        elif len(msgArgs) >= 2:
-          if msg.startswith("!del") and len(msgArgs) == 3:
-            deleteCheck = True
-            maxLogMsgs = 200
-            counter = 0
-            numMsgs = int(msgArgs[1])
-            taggedUser = msgArgs[2]
-            if ('<@' in taggedUser) and ('>' in taggedUser):
-              taggedUser = taggedUser.replace('<', '').replace('>', '').replace('@', '')
-              async for xMessage in message.channel.history(limit=maxLogMsgs):
-                if xMessage.author.id == int(taggedUser):
-                  if counter < numMsgs:
-                    counter +=1
-                    await deleteCommand(message, xMessage.id)
-                  else:
-                    break
-          elif msg.startswith("!del "):
-            deleteCheck = True
-            await deleteMsg(message, msg, msgID, msgArgs)
-
-      
-
-            
-      #commands all members can use
-      if msg.startswith("!pfp"):
-        await getAvatar(message, msgArgs)
-      elif msg == "!emotes":
-        await listAllEmotes(message)
-      elif msg.startswith("!e ") and len(msgArgs)==2:
-        #format of emote: <:emoteName:emoteID>
-        msgArgs = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1)
-        if ':' in msgArgs:
-          msgArgs = msgArgs.split(':')
-          await sendEmote(message, msg, msgID, msgArgs[0])
-        else:
-          await sendEmote(message, msg, msgID, msgArgs)
-      elif msg.startswith("!gif"):
-        await sendGif(message)
-      elif msg.startswith("!del") and ("me" in msg) and (deleteCheck == False):
-        await deleteMsg(message, msg, msgID, msgArgs)
-    except:
-     pass
-
-    #await asyncio.sleep(2)    
-
 
 
 async def addEmote(message, msg, msgID, msgArgs):
   #format of new emote: <:emoteName:emoteID>
   emoteLength = 18
-  newEmote = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1).split(':')
-  if len(newEmote[1]) == emoteLength:
-    if newEmote[0] not in db.keys():
-      db[newEmote[0]] = newEmote[1]
-      await message.channel.send('Emote has been added')
-    else:    
-      await message.channel.send('Emote has already been added')
+  if (msgArgs[1].count('<') == 1 and msgArgs[1].count('>') == 1 and msgArgs[1].count(':') == 2 and msgArgs[1].count('\\') == 0):
+    newEmote = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1).split(':')
+    if len(newEmote[1]) == emoteLength:
+      if newEmote[0] not in db.keys():
+        db[newEmote[0]] = newEmote[1]
+        await message.channel.send('Emote has been added')
+      else:    
+        await message.channel.send('Emote has already been added')
   else:
       await message.channel.send('Invalid emote ID')
 
@@ -154,6 +140,11 @@ async def listAllEmotes(message):
   tempList = ", ".join(tempList)
   await message.channel.send(tempList)
 
+async def createPoll(message):
+  custom_emojis = re.findall(r'<:\w*:\d+>', message.content)
+  for emoji in custom_emojis:
+    await message.add_reaction(emoji)
+
 
 async def getAvatar(message, msgArgs):
   if len(msgArgs) == 1:
@@ -187,20 +178,34 @@ async def deleteMsg(message, msg, msgID, msgArgs):
   maxNumMsgs = 15
   maxLogMsgs = 50
   counter = 0
-  
-  if numMsgs >= minNumMsgs and numMsgs <= maxNumMsgs:
-    if len(msgArgs) == 3 and msgArgs[2] == "me":
-      async for xMessage in message.channel.history(limit=maxLogMsgs):
-        if xMessage.author.id == msgID:
-          if counter <= numMsgs:
-            counter +=1
-            await deleteCommand(message, xMessage.id)
-          else:
-            break
+
+  if len(msgArgs) == 3:
+    taggedUser = msgArgs[2]
+    if taggedUser == "me":
+      taggedUser = msgID
+    elif (('<@' in taggedUser) and ('>' in taggedUser)):
+      maxLogMsgs = 200
+      taggedUser = int(taggedUser.replace('<', '').replace('>', '').replace('@', ''))
     else:
-      await message.channel.purge(limit=numMsgs+1)
+      message.channel.send("Please end the !del command with 'me' or by tagging a user")
+      return
+    await deleteHelper(message, numMsgs, taggedUser, minNumMsgs, maxNumMsgs, maxLogMsgs, counter)
   else:
-    await message.channel.send('Please enter a number from ' + str(minNumMsgs) + ' to ' + str(maxNumMsgs))
+    if numMsgs >= minNumMsgs and numMsgs <= maxNumMsgs:
+      await message.channel.purge(limit=numMsgs+1)
+    else:
+      await message.channel.send('Please enter a number from ' + str(minNumMsgs) + ' to ' + str(maxNumMsgs))
+
+async def deleteHelper(message, numMsgs, taggedUser, minNumMsgs, maxNumMsgs, maxLogMsgs, counter):
+  await deleteCommand(message, message.id)
+  async for xMessage in message.channel.history(limit=maxLogMsgs):
+    if xMessage.author.id == taggedUser:
+      if counter < numMsgs:
+        counter +=1
+        temp = await message.channel.fetch_message(xMessage.id)
+        await temp.delete()
+      else:
+        break
 
 async def deleteCommand(message, messageID):
   temp = await message.channel.fetch_message(messageID)
