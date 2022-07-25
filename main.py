@@ -94,10 +94,10 @@ async def on_ready():
 
 async def addEmote(message, msg, msgID, msgArgs):
   #format of new emote: <:emoteName:emoteID>
-  emoteLength = 18
+  emoteLengths = [18, 19]
   if (msgArgs[1].count('<') == 1 and msgArgs[1].count('>') == 1 and msgArgs[1].count(':') == 2 and msgArgs[1].count('\\') == 0):
     newEmote = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1).split(':')
-    if len(newEmote[1]) == emoteLength:
+    if len(newEmote[1]) in emoteLengths:
       if newEmote[0] not in db.keys():
         db[newEmote[0]] = newEmote[1]
         await message.channel.send('Emote has been added')
