@@ -15,14 +15,14 @@ import random
 
 friendsIds = {}
 friendsList = []
-POSSIBLE_EMOTE_LENGTHS = [18, 19]
 
+##########################################################################################
+#  TO DO:
 #############################################
-#  refactor code into classes
-#  add !helper function
-#  add
+#  add !help function
+#  add !lostark command
 #  change format of db (emotes)
-#############################################
+##########################################################################################
 
 for userInfo in os.getenv('friendsList').split(", "):
     #friendsIds format:
@@ -96,8 +96,6 @@ async def on_ready():
 
         elif msg.startswith("!poll"):
             await createPoll(message)
-
-
 
 try:
     keepAlive()

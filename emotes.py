@@ -1,3 +1,4 @@
+
 async def addEmote(message, msg, msgID, msgArgs):
     #format of new emote: <:emoteName:emoteID>
     POSSIBLE_EMOTE_LENGTHS = [18, 19]
