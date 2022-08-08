@@ -2,7 +2,7 @@ from messages import deleteCommand
 import re as regex
 import requests
 import json
-
+import os
 
 async def createPoll(message):
     custom_emojis = regex.findall(r'<:\w*:\d+>', message.content)

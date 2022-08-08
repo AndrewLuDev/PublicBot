@@ -6,7 +6,9 @@ from replit import db
 from keepAlive import keepAlive
 from emotes import *
 from extraCommands import *
+#from lostark import *
 from messages import *
+
 
 from datetime import datetime
 from pytz import timezone
@@ -62,40 +64,40 @@ async def on_ready():
         deleteCheck = False
 
         if msgID in friendsIds.values():
-            if msg.startswith("!add "):
-                await addEmote(message, msg, msgID, msgArgs)
+          if msg.startswith("!add "):
+            await addEmote(message, msg, msgID, msgArgs)
 
-            elif msg.startswith("!remove "):
-                await removeEmote(message, msg, msgID, msgArgs)
+          elif msg.startswith("!remove "):
+            await removeEmote(message, msg, msgID, msgArgs)
 
-            elif msg.lower() == "!clear emotes":
-                await clearAllEmotes(message)
+          elif msg.lower() == "!clear emotes":
+            await clearAllEmotes(message)
 
-            elif len(msgArgs) >= 2:
-                if msg.startswith("!del "):
-                    deleteCheck = True
-                    await deleteMsg(message, msg, msgID, msgArgs)
+          elif len(msgArgs) >= 2:
+            if msg.startswith("!del "):
+                deleteCheck = True
+                await deleteMsg(message, msg, msgID, msgArgs)
 
         #commands all members can use
         if msg.startswith("!pfp"):
-            await getAvatar(message, msgArgs)
+          await getAvatar(message, msgArgs)
         elif msg == "!emotes":
-            await listAllEmotes(message)
+          await listAllEmotes(message)
         elif msg.startswith("!e ") and len(msgArgs) == 2:
-            #format of emote: <:emoteName:emoteID>
-            msgArgs = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1)
-            if ':' in msgArgs:
-                msgArgs = msgArgs.split(':')
-                await sendEmote(message, msg, msgID, msgArgs[0])
-            else:
-                await sendEmote(message, msg, msgID, msgArgs)
+          #format of emote: <:emoteName:emoteID>
+          msgArgs = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1)
+          if ':' in msgArgs:
+            msgArgs = msgArgs.split(':')
+            await sendEmote(message, msg, msgID, msgArgs[0])
+          else:
+            await sendEmote(message, msg, msgID, msgArgs)
         elif msg.startswith("!gif"):
-            await sendGif(message)
+          await sendGif(message)
         elif msg.startswith("!del") and ("me" in msg) and (deleteCheck == False):
-            await deleteMsg(message, msg, msgID, msgArgs)
+          await deleteMsg(message, msg, msgID, msgArgs)
 
         elif msg.startswith("!poll"):
-            await createPoll(message)
+          await createPoll(message)
 
 try:
     keepAlive()

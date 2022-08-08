@@ -1,3 +1,4 @@
+from replit import db
 
 async def addEmote(message, msg, msgID, msgArgs):
     #format of new emote: <:emoteName:emoteID>
