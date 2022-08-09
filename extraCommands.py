@@ -3,11 +3,19 @@ import re as regex
 import requests
 import json
 import os
+import random
 
-async def createPoll(message):
+async def createPoll(message, client):
     custom_emojis = regex.findall(r'<:\w*:\d+>', message.content)
-    for emoji in custom_emojis:
-        await message.add_reaction(emoji)
+
+    await message.channel.send(message.content)
+  
+    async for tempMessage in message.channel.history(limit=5):
+      if tempMessage.author.id == client.user.id:
+        for emoji in custom_emojis:
+          await tempMessage.add_reaction(emoji)
+        break
+    await deleteCommand(message, message.id)
 
   
 async def getAvatar(message, msgArgs):

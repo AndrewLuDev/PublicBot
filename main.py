@@ -22,8 +22,6 @@ friendsList = []
 #  TO DO:
 #############################################
 #  add !help function
-#  add !lostark command
-#  change format of db (emotes)
 ##########################################################################################
 
 for userInfo in os.getenv('friendsList').split(", "):
@@ -48,9 +46,6 @@ async def on_ready():
 
         #################################################################
         #logs messages into the console (as a temporary audit log)
-        # t = time.localtime()
-        # current_time = time.strftime("%H:%M:%S", t)
-        # print(current_time, message.author.name + '#' + message.author.discriminator, ': ', message.content)
         tz = timezone("US/Eastern")
         date = datetime.now(tz)
 
@@ -58,8 +53,10 @@ async def on_ready():
         print(current_time,
               message.author.name + '#' + message.author.discriminator, ': ',
               message.content)
+        if message.attachments:
+          print(message.attachments[0].url)
         #################################################################
-        #print(len(db))
+
         defaultLostArkDict = {"default":
           {
           "name": "name",
@@ -74,6 +71,18 @@ async def on_ready():
           }
         if "emotes" not in db.keys():
           db["emotes"] = {}
+
+        
+        if msg.startswith("!fake"):
+          await message.channel.send(db["emotes"])
+        elif msg.startswith("!clear"):
+          db.clear()
+        
+        if len(db) == 0:
+          db["lostark"] = {
+            "run": defaultLostArkDict,
+            "dontrun": defaultLostArkDict,
+          }
 
       
         #admin-specific commands
@@ -112,54 +121,39 @@ async def on_ready():
         elif msg.startswith("!del") and ("me" in msg) and (deleteCheck == False):
           await deleteMsg(message, msg, msgID, msgArgs)
 
-        elif msg.startswith("!poll"):
-          await createPoll(message)
+        elif msg.startswith("!poll") and message.author.id != client.user.id:
+          print(message.author.id, client.user.id)
+          await createPoll(message, client)
 
-        # elif msg.startswith("!faketest"):
-        #   emotesList = list(db.keys())
-        #   tempList = []
-        #   for emoteName in emotesList:
-        #     emote = emoteName + " " + db["emotes"][emoteName]
-        #     tempList.append(emote)
-        #   tempList = ", ".join(tempList)
-        #   await message.channel.send(tempList)
-
-        elif msg.startswith("!fake"):
-          await message.channel.send(db["emotes"])
-        elif msg.startswith("clear"):
-          db.clear()
         
-        if len(db) == 0:
-          db["lostark"] = {
-            "run": defaultLostArkDict,
-            "dontrun": defaultLostArkDict,
-          }
-        
-        if msgArgs[0] == "!lostark":
+        if msg.startswith("!lostark"):
           await lostark(message)
         
-        if msgArgs[0] == "!run":
+        elif msg.startswith("!run"):
           await lostarkrun(message)
         
-        if msgArgs[0] == "!dontrun":
+        elif msg.startswith("!dontrun"):
           await lostarkdontrun(message)
         
-        if msgArgs[0] == "!runadd":
+        elif msg.startswith("!runadd"):
           await runadd(message, msgArgs)
           
-        if msgArgs[0] == "!runremove":
+        elif msg.startswith("!runremove"):
           await runremove(message, msgArgs)
         
-        if msgArgs[0] == "!dontrunadd":
+        elif msg.startswith("!dontrunadd"):
           await dontrunadd(message, msgArgs)
           
-        if msgArgs[0] == "!dontrunremove":
+        elif msg.startswith("!dontrunremove"):
           await dontrunremove(message, msgArgs)
                     
-        if msgArgs[0] == "!hello":
+        elif msg.startswith("!hello"):
           for values in db["lostark"]["run"].values():
             print(values)
           #print(db["lostark"]["run"])
+
+        elif msg.startswith("!add all"):
+          await addall(message)
 
 try:
     keepAlive()

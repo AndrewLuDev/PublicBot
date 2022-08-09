@@ -19,8 +19,8 @@ async def addEmote(message, msg, msgID, msgArgs):
 
 
 async def removeEmote(message, msg, msgID, msgArgs):
-    if msgArgs[1].lower() in db.keys():
-        del db[msgArgs[1]]
+    if msgArgs[1].lower() in db["emotes"].keys():
+        del db["emotes"][msgArgs[1]]
         await message.channel.send(msgArgs[1] + " has been removed")
     else:
         await message.channel.send(msgArgs[1] + " is not in the emotes list")
@@ -33,14 +33,14 @@ async def clearAllEmotes(message):
 
 
 async def sendEmote(message, msg, msgID, emoteName):
-    if emoteName.lower() in db.keys():
-        tempString = '<:' + emoteName + ':' + db[emoteName] + '>'
+    if emoteName.lower() in db["emotes"].keys():
+        tempString = '<:' + emoteName + ':' + db["emotes"][emoteName] + '>'
 
         temp = await message.channel.fetch_message(message.id)
         #await asyncio.sleep(1)
         await temp.delete()
         await message.channel.send(tempString)
-    elif emoteName[0].lower() not in db.keys():
+    elif emoteName[0].lower() not in db["emotes"].keys():
         await message.channel.send('Emote is not in the emotes list')
 
 
@@ -54,3 +54,11 @@ async def listAllEmotes(message):
         tempList.append(emoteName + ": " + emote)
     tempList = ", ".join(tempList)
     await message.channel.send(tempList)
+
+async def addall(message):
+  emotesList = {"minapout": "962922566048170004", "ratge": "1003864628016709702", "donowall": "1001665099066527897", "seocringe": "983894841475891240", "sadgecry": "999753988482277388", "smoge": "942669134817267733", "naruge": "962040365936963605", "noooo": "962111822142525501", "shyggers": "1001229635704606900", "cocka": "963273264384339998", "minaheart": "963246634068766771", "okaygebusiness": "995562005987606601", "sadge": "942669124910342174", "minagasm": "963246645972205568", "susge": "975601891033612348", "booba": "963273543393628231", "despairge": "1002256106229342319", "fishinge": "989308544706805780", "madge": "778701970583715840", "yumekono": "1003664916345008139", "johnchina": "1003666661615870063", "okayge": "969721860013051905", "yumekogun": "1003664837987016784", "starege": "975894479221436476", "wokege": "917171164223262811", "gonyuck": "1003664995659292723", "dcolon": "662760009909665815", "holdl": "965704234018439228", "pausechamp": "1003686226139807774", "wicked": "964282331433144350"}
+  for key in emotesList.keys():
+    print(key, emotesList[key])
+    if key not in db["emotes"].keys():
+      db["emotes"][key] = emotesList[key]
+  await message.channel.send("all emotes have been added")
