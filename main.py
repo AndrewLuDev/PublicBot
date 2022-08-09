@@ -6,7 +6,7 @@ from replit import db
 from keepAlive import keepAlive
 from emotes import *
 from extraCommands import *
-#from lostark import *
+from lostark import *
 from messages import *
 
 
@@ -59,7 +59,23 @@ async def on_ready():
               message.author.name + '#' + message.author.discriminator, ': ',
               message.content)
         #################################################################
+        #print(len(db))
+        defaultLostArkDict = {"default":
+          {
+          "name": "name",
+          "role": "role",
+          }
+        }
 
+        if "lostark" not in db.keys():
+          db["lostark"] = {
+            "run": defaultLostArkDict,
+            "dontrun": defaultLostArkDict,
+          }
+        if "emotes" not in db.keys():
+          db["emotes"] = {}
+
+      
         #admin-specific commands
         deleteCheck = False
 
@@ -98,6 +114,52 @@ async def on_ready():
 
         elif msg.startswith("!poll"):
           await createPoll(message)
+
+        # elif msg.startswith("!faketest"):
+        #   emotesList = list(db.keys())
+        #   tempList = []
+        #   for emoteName in emotesList:
+        #     emote = emoteName + " " + db["emotes"][emoteName]
+        #     tempList.append(emote)
+        #   tempList = ", ".join(tempList)
+        #   await message.channel.send(tempList)
+
+        elif msg.startswith("!fake"):
+          await message.channel.send(db["emotes"])
+        elif msg.startswith("clear"):
+          db.clear()
+        
+        if len(db) == 0:
+          db["lostark"] = {
+            "run": defaultLostArkDict,
+            "dontrun": defaultLostArkDict,
+          }
+        
+        if msgArgs[0] == "!lostark":
+          await lostark(message)
+        
+        if msgArgs[0] == "!run":
+          await lostarkrun(message)
+        
+        if msgArgs[0] == "!dontrun":
+          await lostarkdontrun(message)
+        
+        if msgArgs[0] == "!runadd":
+          await runadd(message, msgArgs)
+          
+        if msgArgs[0] == "!runremove":
+          await runremove(message, msgArgs)
+        
+        if msgArgs[0] == "!dontrunadd":
+          await dontrunadd(message, msgArgs)
+          
+        if msgArgs[0] == "!dontrunremove":
+          await dontrunremove(message, msgArgs)
+                    
+        if msgArgs[0] == "!hello":
+          for values in db["lostark"]["run"].values():
+            print(values)
+          #print(db["lostark"]["run"])
 
 try:
     keepAlive()

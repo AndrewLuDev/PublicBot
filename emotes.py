@@ -9,8 +9,8 @@ async def addEmote(message, msg, msgID, msgArgs):
                                               '').replace('>', '').replace(
                                                   ':', '', 1).split(':')
         if len(newEmote[1]) in POSSIBLE_EMOTE_LENGTHS:
-            if newEmote[0] not in db.keys():
-                db[newEmote[0]] = newEmote[1]
+            if newEmote[0] not in db["emotes"].keys():
+                db["emotes"][newEmote[0]] = newEmote[1]
                 await message.channel.send('Emote has been added')
             else:
                 await message.channel.send('Emote has already been added')
@@ -27,8 +27,8 @@ async def removeEmote(message, msg, msgID, msgArgs):
 
 
 async def clearAllEmotes(message):
-    for emoteName in db.keys():
-        del db[emoteName]
+    for emoteName in db["emotes"].keys():
+        del db["emotes"][emoteName]
     await message.channel.send('All emotes have been removed')
 
 
@@ -45,12 +45,12 @@ async def sendEmote(message, msg, msgID, emoteName):
 
 
 async def listAllEmotes(message):
-    emotesList = list(db.keys())
+    emotesList = list(db["emotes"].keys())
     emotesList.sort()
 
     tempList = []
     for emoteName in emotesList:
-        emote = "<:" + emoteName + ":" + db[emoteName] + ">"
+        emote = "<:" + emoteName + ":" + db["emotes"][emoteName] + ">"
         tempList.append(emoteName + ": " + emote)
     tempList = ", ".join(tempList)
     await message.channel.send(tempList)

@@ -13,24 +13,24 @@ if len(db) == 0:
     "dontrun": defaultLostArkDict,
   }
 
-if msgArgs[0] == "!lostark":
+async def lostark(message):
   await message.channel.send("Please use !run or !dontrun")
 
-if msgArgs[0] == "!run":
+async def lostarkrun(message):
   runList = []
   for player in db["lostark"]["run"].keys():
     runList.append(db["lostark"]["run"][player]["name"] + " " + db["lostark"]["run"][player]["role"])
   runList = "\n".join(runList)
   await message.channel.send(runList)
 
-if msgArgs[0] == "!dontrun":
+async def lostarkdontrun(message):
   runList = []
   for player in db["lostark"]["dontrun"].keys():
     runList.append(db["lostark"]["dontrun"][player]["name"] + " " + db["lostark"]["dontrun"][player]["role"])
   runList = "\n".join(runList)
   await message.channel.send(runList)
 
-if msgArgs[0] == "!runadd":
+async def runadd(message, msgArgs):
   if len(msgArgs) == 3:
     tempdict = {
       "name": msgArgs[1],
@@ -38,9 +38,11 @@ if msgArgs[0] == "!runadd":
     }
     db["lostark"]["run"][msgArgs[1]] = tempdict
     print(db["lostark"]["run"])
+    await message.channel.send(msgArgs[1] + " has been added to the run list")
   else:
     await message.channel.send("Incorrect format!\nThe correct format is:\n!runadd Name Role")
-if msgArgs[0] == "!runremove":
+    
+async def runremove(message, msgArgs):
   if len(msgArgs) >= 2:
     if msgArgs[1] in db["lostark"]["run"].keys():
       del db["lostark"]["run"][msgArgs[1]]
@@ -50,7 +52,7 @@ if msgArgs[0] == "!runremove":
   else:
     await message.channel.send("Incorrect format!\nThe correct format is:\n!runremove Name")
 
-if msgArgs[0] == "!dontrunadd":
+async def dontrunadd(message, msgArgs):
   if len(msgArgs) == 3:
     tempdict = {
       "name": msgArgs[1],
@@ -61,7 +63,8 @@ if msgArgs[0] == "!dontrunadd":
     await message.channel.send(msgArgs[1] + " has been added to the dontrun list")
   else:
     await message.channel.send("Incorrect format!\nThe correct format is:\n!runadd Name Role")
-if msgArgs[0] == "!dontrunremove":
+
+async def dontrunremove(message, msgArgs):
   if len(msgArgs) >= 2:
     if msgArgs[1] in db["lostark"]["dontrun"].keys():
       del db["lostark"]["dontrun"][msgArgs[1]]
@@ -75,7 +78,7 @@ if msgArgs[0] == "!dontrunremove":
 
 
     
-if msgArgs[0] == "!hello":
-  for values in db["lostark"]["run"].values():
-    print(values)
-  #print(db["lostark"]["run"])
+# if msgArgs[0] == "!hello":
+#   for values in db["lostark"]["run"].values():
+#     print(values)
+#   #print(db["lostark"]["run"])
