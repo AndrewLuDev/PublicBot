@@ -1,3 +1,7 @@
+import discord
+#list of commands:
+#lostark, lostarkrun, lostarkdontrun, runadd, runremove, dontrunadd, dontrunremove
+
 from replit import db
 
 defaultLostArkDict = {"default":
@@ -14,7 +18,14 @@ if len(db) == 0:
   }
 
 async def lostark(message):
-  await message.channel.send("Please use !run or !dontrun")
+    helpEmbed = discord.Embed(title = "Lost Ark Commands")
+    helpEmbed.add_field(name="!run", value="Lists all users to run with")
+    helpEmbed.add_field(name="!runadd <name> <class>", value="Adds a user to the !run list")
+    helpEmbed.add_field(name="!runremove <name>", value="Removes the specified user from the !run list")
+    helpEmbed.add_field(name="!dontrun", value="Lists all users to run with")
+    helpEmbed.add_field(name="!dontrunadd <name> <class>", value="Adds a user to the !dontrun list")
+    helpEmbed.add_field(name="!dontrunremove <name>", value="Removes the specified user from the !dontrun list")
+    await message.channel.send(embed=helpEmbed)
 
 async def lostarkrun(message):
   runList = []

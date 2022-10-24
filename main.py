@@ -8,6 +8,7 @@ from emotes import *
 from extraCommands import *
 from lostark import *
 from messages import *
+from help import *
 
 
 from datetime import datetime
@@ -40,6 +41,7 @@ async def on_ready():
 
     @client.event
     async def on_message(message):
+      
         msg = message.content
         msgID = message.author.id
         msgArgs = msg.split()
@@ -54,7 +56,7 @@ async def on_ready():
               message.author.name + '#' + message.author.discriminator, ': ',
               message.content)
         if message.attachments:
-          print(message.attachments[0].url)
+          print(message.attachments)
         #################################################################
 
         defaultLostArkDict = {"default":
@@ -125,16 +127,12 @@ async def on_ready():
           print(message.author.id, client.user.id)
           await createPoll(message, client)
 
+        if msg.startswith("!help"):
+          await help(message)
         
         if msg.startswith("!lostark"):
           await lostark(message)
-        
-        elif msg.startswith("!run"):
-          await lostarkrun(message)
-        
-        elif msg.startswith("!dontrun"):
-          await lostarkdontrun(message)
-        
+          
         elif msg.startswith("!runadd"):
           await runadd(message, msgArgs)
           
@@ -146,6 +144,12 @@ async def on_ready():
           
         elif msg.startswith("!dontrunremove"):
           await dontrunremove(message, msgArgs)
+
+        elif msg.startswith("!run"):
+          await lostarkrun(message)
+        
+        elif msg.startswith("!dontrun"):
+          await lostarkdontrun(message)
                     
         elif msg.startswith("!hello"):
           for values in db["lostark"]["run"].values():

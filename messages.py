@@ -1,4 +1,5 @@
-
+#list of commands:
+#deleteMsg !del
 
 async def deleteMsg(message, msg, msgID, msgArgs):
     numMsgs = int(msgArgs[1])

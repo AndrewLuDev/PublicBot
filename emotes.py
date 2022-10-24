@@ -1,4 +1,5 @@
 from replit import db
+import discord
 
 async def addEmote(message, msg, msgID, msgArgs):
     #format of new emote: <:emoteName:emoteID>
@@ -48,6 +49,8 @@ async def listAllEmotes(message):
     emotesList = list(db["emotes"].keys())
     emotesList.sort()
 
+    await message.channel.send("Getting all emotes...", delete_after=2)
+  
     tempList = []
     for emoteName in emotesList:
         emote = "<:" + emoteName + ":" + db["emotes"][emoteName] + ">"
