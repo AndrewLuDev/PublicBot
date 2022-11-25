@@ -100,6 +100,9 @@ async def on_ready():
           elif msg.lower() == "!clear emotes":
             await clearAllEmotes(message)
 
+          elif msg.startswith("!purge"):
+            await purgeChat(message)
+
           elif len(msgArgs) >= 2:
             if msg.startswith("!del "):
                 deleteCheck = True

@@ -1,5 +1,7 @@
 #list of commands:
 #deleteMsg !del
+async def purgeChat(message):
+  await message.channel.purge(limit=50)
 
 async def deleteMsg(message, msg, msgID, msgArgs):
     numMsgs = int(msgArgs[1])
