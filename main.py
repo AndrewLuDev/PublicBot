@@ -10,7 +10,6 @@ from lostark import *
 from messages import *
 from help import *
 
-
 from datetime import datetime
 from pytz import timezone
 
@@ -41,7 +40,7 @@ async def on_ready():
 
     @client.event
     async def on_message(message):
-      
+
         msg = message.content
         msgID = message.author.id
         msgArgs = msg.split()
@@ -56,111 +55,108 @@ async def on_ready():
               message.author.name + '#' + message.author.discriminator, ': ',
               message.content)
         if message.attachments:
-          print(message.attachments)
+            print(message.attachments)
         #################################################################
 
-        defaultLostArkDict = {"default":
-          {
-          "name": "name",
-          "role": "role",
-          }
+        defaultLostArkDict = {
+            "default": {
+                "name": "name",
+                "role": "role",
+            }
         }
 
         if "lostark" not in db.keys():
-          db["lostark"] = {
-            "run": defaultLostArkDict,
-            "dontrun": defaultLostArkDict,
-          }
+            db["lostark"] = {
+                "run": defaultLostArkDict,
+                "dontrun": defaultLostArkDict,
+            }
         if "emotes" not in db.keys():
-          db["emotes"] = {}
+            db["emotes"] = {}
 
-        
         if msg.startswith("!fake"):
-          await message.channel.send(db["emotes"])
+            await message.channel.send(db["emotes"])
         elif msg.startswith("!clear"):
-          db.clear()
-        
-        if len(db) == 0:
-          db["lostark"] = {
-            "run": defaultLostArkDict,
-            "dontrun": defaultLostArkDict,
-          }
+            db.clear()
 
-      
+        if len(db) == 0:
+            db["lostark"] = {
+                "run": defaultLostArkDict,
+                "dontrun": defaultLostArkDict,
+            }
+
         #admin-specific commands
         deleteCheck = False
 
         if msgID in friendsIds.values():
-          if msg.startswith("!add "):
-            await addEmote(message, msg, msgID, msgArgs)
+            if msg.startswith("!add "):
+                await addEmote(message, msg, msgID, msgArgs)
 
-          elif msg.startswith("!remove "):
-            await removeEmote(message, msg, msgID, msgArgs)
+            elif msg.startswith("!remove "):
+                await removeEmote(message, msg, msgID, msgArgs)
 
-          elif msg.lower() == "!clear emotes":
-            await clearAllEmotes(message)
+            elif msg.lower() == "!clear emotes":
+                await clearAllEmotes(message)
 
-          elif msg.startswith("!purge"):
-            await purgeChat(message)
+            elif msg.startswith("!purge"):
+                await purgeChat(message)
 
-          elif len(msgArgs) >= 2:
-            if msg.startswith("!del "):
-                deleteCheck = True
-                await deleteMsg(message, msg, msgID, msgArgs)
+            elif len(msgArgs) >= 2:
+                if msg.startswith("!del "):
+                    deleteCheck = True
+                    await deleteMsg(message, msg, msgID, msgArgs)
 
         #commands all members can use
         if msg.startswith("!pfp"):
-          await getAvatar(message, msgArgs)
+            await getAvatar(message, msgArgs)
         elif msg == "!emotes":
-          await listAllEmotes(message)
+            await listAllEmotes(message)
         elif msg.startswith("!e ") and len(msgArgs) == 2:
-          #format of emote: <:emoteName:emoteID>
-          msgArgs = msgArgs[1].lower().replace('<', '').replace('>', '').replace(':', '', 1)
-          if ':' in msgArgs:
-            msgArgs = msgArgs.split(':')
-            await sendEmote(message, msg, msgID, msgArgs[0])
-          else:
-            await sendEmote(message, msg, msgID, msgArgs)
+            #format of emote: <:emoteName:emoteID>
+            msgArgs = msgArgs[1].lower().replace('<',
+                                                 '').replace('>', '').replace(
+                                                     ':', '', 1)
+            if ':' in msgArgs:
+                msgArgs = msgArgs.split(':')
+                await sendEmote(message, msg, msgID, msgArgs[0])
+            else:
+                await sendEmote(message, msg, msgID, msgArgs)
         elif msg.startswith("!gif"):
-          await sendGif(message)
-        elif msg.startswith("!del") and ("me" in msg) and (deleteCheck == False):
-          await deleteMsg(message, msg, msgID, msgArgs)
+            await sendGif(message)
+        elif msg.startswith("!del") and ("me" in msg) and (deleteCheck
+                                                           == False):
+            await deleteMsg(message, msg, msgID, msgArgs)
 
         elif msg.startswith("!poll") and message.author.id != client.user.id:
-          print(message.author.id, client.user.id)
-          await createPoll(message, client)
+            print(message.author.id, client.user.id)
+            await createPoll(message, client)
 
         if msg.startswith("!help"):
-          await help(message)
-        
+            await help(message)
+
         if msg.startswith("!lostark"):
-          await lostark(message)
-          
+            await lostark(message)
+
         elif msg.startswith("!runadd"):
-          await runadd(message, msgArgs)
-          
+            await runadd(message, msgArgs)
+
         elif msg.startswith("!runremove"):
-          await runremove(message, msgArgs)
-        
+            await runremove(message, msgArgs)
+
         elif msg.startswith("!dontrunadd"):
-          await dontrunadd(message, msgArgs)
-          
+            await dontrunadd(message, msgArgs)
+
         elif msg.startswith("!dontrunremove"):
-          await dontrunremove(message, msgArgs)
+            await dontrunremove(message, msgArgs)
 
         elif msg.startswith("!run"):
-          await lostarkrun(message)
-        
+            await lostarkrun(message)
+
         elif msg.startswith("!dontrun"):
-          await lostarkdontrun(message)
-                    
-        elif msg.startswith("!hello"):
-          for values in db["lostark"]["run"].values():
-            print(values)
-          #print(db["lostark"]["run"])
+            await lostarkdontrun(message)
 
         elif msg.startswith("!add all"):
-          await addall(message)
+            await addall(message)
+
 
 try:
     keepAlive()
