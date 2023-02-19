@@ -73,11 +73,6 @@ async def on_ready():
         if "emotes" not in db.keys():
             db["emotes"] = {}
 
-        if msg.startswith("!fake"):
-            await message.channel.send(db["emotes"])
-        elif msg.startswith("!clear"):
-            db.clear()
-
         if len(db) == 0:
             db["lostark"] = {
                 "run": defaultLostArkDict,
@@ -97,6 +92,11 @@ async def on_ready():
             elif msg.lower() == "!clear emotes":
                 await clearAllEmotes(message)
 
+            if msg.startswith("!e list"):
+              await message.channel.send(db["emotes"])
+            # elif msg.startswith("!clear"):
+            #   db.clear()
+          
             elif msg.startswith("!purge"):
                 await purgeChat(message)
 
