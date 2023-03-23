@@ -92,7 +92,7 @@ async def on_ready():
             elif msg.lower() == "!clear emotes":
                 await clearAllEmotes(message)
 
-            if msg.startswith("!e list"):
+            elif msg.startswith("!e list"):
               await message.channel.send(db["emotes"])
             # elif msg.startswith("!clear"):
             #   db.clear()
@@ -122,8 +122,9 @@ async def on_ready():
                 await sendEmote(message, msg, msgID, msgArgs)
         elif msg.startswith("!gif"):
             await sendGif(message)
-        elif msg.startswith("!del") and ("me" in msg) and (deleteCheck
-                                                           == False):
+        elif msg.startswith("!hide"):
+            await hideMessages(message, msg, msgID, msgArgs)
+        elif msg.startswith("!del") and ("me" in msg) and (deleteCheck == False):
             await deleteMsg(message, msg, msgID, msgArgs)
 
         elif msg.startswith("!poll") and message.author.id != client.user.id:
