@@ -3,19 +3,26 @@ import discord
 #lostark, lostarkrun, lostarkdontrun, runadd, runremove, dontrunadd, dontrunremove
 
 from replit import db
+# defaultLostArkDict = {
+#     "default": {
+#         "name": "name",
+#         "role": "role",
+#     }
+# }
 
-defaultLostArkDict = {"default":
-  {
-  "name": "name",
-  "role": "role",
-  }
-}
+# if "lostark" not in db.keys():
+#     db["lostark"] = {
+#         "run": defaultLostArkDict,
+#         "dontrun": defaultLostArkDict,
+#     }
+# if "emotes" not in db.keys():
+#     db["emotes"] = {}
 
-if len(db) == 0:
-  db["lostark"] = {
-    "run": defaultLostArkDict,
-    "dontrun": defaultLostArkDict,
-  }
+# if len(db) == 0:
+#     db["lostark"] = {
+#         "run": defaultLostArkDict,
+#         "dontrun": defaultLostArkDict,
+#     }
 
 async def lostark(message):
     helpEmbed = discord.Embed(title = "Lost Ark Commands")
@@ -93,3 +100,27 @@ async def dontrunremove(message, msgArgs):
 #   for values in db["lostark"]["run"].values():
 #     print(values)
 #   #print(db["lostark"]["run"])
+
+
+
+#archived commands
+  # if msg.startswith("!lostark"):
+  #     await lostark(message)
+
+  # elif msg.startswith("!runadd"):
+  #     await runadd(message, msgArgs)
+
+  # elif msg.startswith("!runremove"):
+  #     await runremove(message, msgArgs)
+
+  # elif msg.startswith("!dontrunadd"):
+  #     await dontrunadd(message, msgArgs)
+
+  # elif msg.startswith("!dontrunremove"):
+  #     await dontrunremove(message, msgArgs)
+
+  # elif msg.startswith("!run"):
+  #     await lostarkrun(message)
+
+  # elif msg.startswith("!dontrun"):
+  #     await lostarkdontrun(message)
